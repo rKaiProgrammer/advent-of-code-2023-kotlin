@@ -1,3 +1,5 @@
+import java.util.*
+
 fun main() {
     fun part1(input: List<String>): Int {
         var sum = 0
@@ -93,7 +95,79 @@ fun main() {
 
 
     fun part2(input: List<String>): Int {
-        return input.size
+        var sum = 0
+        val list = LinkedList<String>()
+        for (i in 0 until Math.min(input.size, 3)) {
+            list.add(input[i])
+        }
+        var i = 2
+        while (list.size == 3) {
+            val temp = mutableListOf<String>()
+            temp.add(list.poll())
+            temp.add(list[0])
+            temp.add(list[1])
+            for(i in temp[1].indices) {
+                val char = temp[1][i]
+                if (char == '*'){
+
+                    val matrix = Array(3){CharArray(temp[it].length){' '} }
+                    for (r in matrix.indices) {
+                        for(c in i-1 downTo 0) {
+                            if (temp[r][c]-'0' in 0..9) {
+                                matrix[r][c] = temp[r][c]
+                            } else {
+                                break
+                            }
+                        }
+                        for(c in i+1 until  matrix[r].size) {
+                            if (temp[r][c]-'0' in 0..9) {
+                                matrix[r][c] = temp[r][c]
+                            } else {
+                                break
+                            }
+                        }
+                        matrix[r][i] = if (temp[r][i]-'0' in 0..9) temp[r][i] else ' '
+                    }
+
+                    val found =  mutableListOf<Int>()
+                    for(r in matrix.indices) {
+                        var s = ""
+                        for (c in matrix[r].indices) {
+                            if (matrix[r][c] != ' ') {
+                                s += matrix[r][c]
+                                if (c == matrix[r].size - 1) {
+                                    if (s.isNotEmpty()) {
+                                        val n = s.toInt()
+                                        found.add(n)
+                                        s = ""
+                                    }
+                                }
+                            } else {
+                                if (s.isNotEmpty()) {
+                                    val n = s.toInt()
+                                    found.add(n)
+                                    s = ""
+                                }
+                            }
+                        }
+                    }
+
+                    if (found.size == 2) {
+                        println("${found[0]} * ${found[1]} = ${found[0] * found[1]}")
+                        sum += found[0] * found[1]
+                    }
+                }
+            }
+            i++
+
+            if (i < input.size) {
+                list.add(input[i])
+            }
+
+
+        }
+
+        return sum
     }
 
 
@@ -101,6 +175,8 @@ fun main() {
     val testInput = readInput("Day03_test")
     println(part1(testInput))
     check(part1(testInput) == 4361)
+    println(part2(testInput))
+    check(part2(testInput) == 467835)
 
     val input = readInput("Day03")
     part1(input).println()
