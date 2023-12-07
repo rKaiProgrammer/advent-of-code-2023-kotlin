@@ -10,10 +10,9 @@ enum class CamelCardType(val value: Int) {
     OnePair(2),
     HighCard(1),
 }
+data class Item(val hand: String, val type: CamelCardType, val bid: Int)
 
 fun main() {
-    data class Item(val hand: String, val type: CamelCardType, val bid: Int)
-
     fun part1(input: List<String>): Int {
         val list = input.map {
             val arr = it.split(" ")
@@ -92,18 +91,100 @@ fun main() {
         return res
 
     }
-
     fun part2(input: List<String>): Int {
-        return 0
+        val list = input.map {
+            val arr = it.split(" ")
+            val map = HashMap<Char, Int>()
+            for (c in arr[0]) {
+                map[c] = map.getOrDefault(c, 0) + 1
+            }
+            val list = mutableListOf<Int>()
+            val countJ = map['J']?:0
+            for ((k, v) in map) {
+                if (v != 0 && k != 'J') {
+                    list.add(v)
+                }
+            }
+            list.sortDescending()
+            if (list.isEmpty()) { // JJJJJ
+                list.add(5)
+            } else {
+                list[0] += countJ
+            }
+
+            val type = when {
+                list[0] == 5 -> CamelCardType.FiveOfAKind
+                list[0] == 4 -> CamelCardType.FourOfAKind
+                list[0] == 3 -> {
+                    if (list[1] == 2) CamelCardType.FullHouse else CamelCardType.ThreeOfAKind
+                }
+
+                list[0] == 2 -> {
+                    if (list[1] == 2) CamelCardType.TwoPair else CamelCardType.OnePair
+                }
+
+                else -> {
+                    CamelCardType.HighCard
+                }
+            }
+
+
+            Item(arr[0], type, arr[1].toInt())
+        }.toMutableList()
+        val orderMap = hashMapOf(
+            'A' to 13,
+            'K' to 12,
+            'Q' to 11,
+            'T' to 10,
+            '9' to 9,
+            '8' to 8,
+            '7' to 7,
+            '6' to 6,
+            '5' to 5,
+            '4' to 4,
+            '3' to 3,
+            '2' to 2,
+            'J' to 1,
+
+
+            )
+        list.sortWith(kotlin.Comparator<Item>() { a, b ->
+            if (b.type.value == a.type.value) {
+                var compareResult = 0
+                for (i in 0 until 5) {
+                    val orderA = orderMap[a.hand[i]]!!
+                    val orderB = orderMap[b.hand[i]]!!
+                    if (orderB > orderA) {
+                        compareResult = 1
+                        break
+                    } else if (orderA > orderB) {
+                        compareResult = -1
+                        break
+                    }
+                }
+                compareResult
+            } else {
+                b.type.value - a.type.value
+            }
+        })
+
+        var res = 0
+        for (i in list.indices) {
+            println("${(list.size - i)} ${list[i]}")
+            res += (list.size - i) * list[i].bid
+        }
+        return res
+
     }
+
 
     val testInput = readInput("Day07_test")
     println(part1(testInput))
     check(part1(testInput) == 6440)
-//    println(part2(testInput))
-//    check(part2(testInput) == )
+    println(part2(testInput))
+    check(part2(testInput) == 5905)
 
     val input = readInput("Day07")
     part1(input).println()
-//    part2(input).println()
+    part2(input).println()
 }
